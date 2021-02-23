@@ -24,6 +24,8 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.ParameterNode;
 
+import wtf.choco.commons.util.UpdateChecker;
+
 /*
  * Modified implementation of the AnnotationTest from org.bukkit.AnnotationTest.
  *
@@ -51,7 +53,7 @@ public class AnnotationTest {
 
     @Test
     public void testAnnotations() throws IOException, URISyntaxException {
-        URL location = ChocoCommons.class.getProtectionDomain().getCodeSource().getLocation();
+        URL location = UpdateChecker.class.getProtectionDomain().getCodeSource().getLocation();
         File file = new File(location.toURI());
 
         // Running from jar is not supported yet
