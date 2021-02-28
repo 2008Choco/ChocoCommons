@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
@@ -61,7 +62,7 @@ import org.jetbrains.annotations.NotNull;
 public class IntegrationHandler {
 
     private final Map<@NotNull Class<? extends PluginIntegration>, @NotNull PluginIntegration> integrations = new HashMap<>();
-    private final Map<@NotNull String, @NotNull Function<@NotNull Plugin, @NotNull PluginIntegration>> integrationConstructors = new HashMap<>();
+    private final Map<@NotNull String, @NotNull Supplier<@NotNull Function<@NotNull Plugin, @NotNull PluginIntegration>>> integrationConstructors = new HashMap<>();
 
     private final Logger logger;
 
@@ -82,7 +83,21 @@ public class IntegrationHandler {
      * @param pluginId the id of the plugin with which to integrate
      * @param integrationConstructor the function to construct an instance of the PluginIntegration
      */
+    @Deprecated
     public void registerIntegrations(@NotNull String pluginId, @NotNull Function<@NotNull Plugin, @NotNull PluginIntegration> integrationConstructor) {
+        Preconditions.checkArgument(pluginId != null, "pluginId must not be null");
+        Preconditions.checkArgument(integrationConstructor != null, "integrationConstructor must not be null");
+
+        this.integrationConstructors.put(pluginId, () -> integrationConstructor);
+    }
+
+    /**
+     * Register a new plugin integration.
+     *
+     * @param pluginId the id of the plugin with which to integrate
+     * @param integrationConstructor a function supplier to construct an instance of the PluginIntegration
+     */
+    public void registerIntegrations(@NotNull String pluginId, @NotNull Supplier<Function<@NotNull Plugin, @NotNull PluginIntegration>> integrationConstructor) {
         Preconditions.checkArgument(pluginId != null, "pluginId must not be null");
         Preconditions.checkArgument(integrationConstructor != null, "integrationConstructor must not be null");
 
@@ -127,7 +142,7 @@ public class IntegrationHandler {
                 return;
             }
 
-            PluginIntegration integration = integrationConstructor.apply(plugin);
+            PluginIntegration integration = integrationConstructor.get().apply(plugin);
             if (!integration.isSupported()) {
                 return;
             }
