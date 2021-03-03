@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang.math.NumberUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * A series of utilities pertaining to mathematical operations.
@@ -103,7 +104,7 @@ public final class MathUtil {
      *
      * @return the amount of time in seconds represented by the supplied value
      */
-    public static int parseSeconds(String value, int defaultSeconds) {
+    public static int parseSeconds(@Nullable String value, int defaultSeconds) {
         return (value != null) ? parseSeconds(value) : defaultSeconds;
     }
 
@@ -114,7 +115,11 @@ public final class MathUtil {
      *
      * @return the amount of time in seconds represented by the supplied value
      */
-    public static int parseSeconds(String value) {
+    public static int parseSeconds(@Nullable String value) {
+        if (value == null) {
+            return 0;
+        }
+
         // Handle legacy (i.e. no timestamps... for example, just "600")
         int legacyTime = NumberUtils.toInt(value, -1);
         if (legacyTime != -1) {
