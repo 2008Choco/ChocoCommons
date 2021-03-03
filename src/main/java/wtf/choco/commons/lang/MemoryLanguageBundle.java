@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.bukkit.ChatColor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -79,7 +80,7 @@ public abstract class MemoryLanguageBundle implements LanguageBundle {
             string = string.replace("%" + placeholder.getKey() + "%", placeholder.getValue());
         }
 
-        return string;
+        return ChatColor.translateAlternateColorCodes('&', string);
     }
 
     @NotNull
