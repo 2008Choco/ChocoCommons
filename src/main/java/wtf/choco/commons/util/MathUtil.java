@@ -167,6 +167,7 @@ public final class MathUtil {
      *
      * @return the formatted time
      */
+    @NotNull
     public static String getFormattedTime(int timeInSeconds, boolean condensed, @NotNull TimeUnit @NotNull... omitions) {
         Preconditions.checkArgument(omitions != null, "omitions must not be null");
 
