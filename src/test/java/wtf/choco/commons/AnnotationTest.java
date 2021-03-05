@@ -47,6 +47,7 @@ public class AnnotationTest {
     private static final String[] EXCLUDED_CLASSES = {
         "wtf/choco/commons/collection/RefreshableEnumSet", // Extends AbstractSet, cannot be entirely annotated
         "wtf/choco/commons/collection/NonNullHashSet", // Extends AbstractSet, ... ^
+        "wtf/choco/commons/function/impl/LazyValue", // Implements Supplier<T>, ... ^
         "wtf/choco/commons/network/PluginMessageByteBuffer", // Eclipse is high and thinks byte[] isn't nullable
     };
 
