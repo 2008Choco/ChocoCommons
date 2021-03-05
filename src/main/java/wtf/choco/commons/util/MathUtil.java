@@ -2,7 +2,9 @@ package wtf.choco.commons.util;
 
 import com.google.common.base.Preconditions;
 
+import java.util.EnumSet;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -152,6 +154,88 @@ public final class MathUtil {
         }
 
         return seconds;
+    }
+
+    /**
+     * Get a formatted time String from a time in seconds. Formatted time should be in the
+     * format, "x hours, y minutes, z seconds". Alternatively, if time is 0, "now", or
+     * "invalid seconds" otherwise.
+     *
+     * @param timeInSeconds the time in seconds
+     * @param condensed whether or not to condense time units (i.e. hours {@literal ->} h)
+     * @param omitions the time units to omit
+     *
+     * @return the formatted time
+     */
+    public static String getFormattedTime(int timeInSeconds, boolean condensed, @NotNull TimeUnit @NotNull... omitions) {
+        Preconditions.checkArgument(omitions != null, "omitions must not be null");
+
+        if (timeInSeconds <= 0) {
+            return (timeInSeconds == 0) ? "now" : "invalid seconds";
+        }
+
+        Set<@NotNull TimeUnit> omitionsSet = EnumSet.noneOf(TimeUnit.class);
+        if (omitions != null) {
+            for (TimeUnit unit : omitions) {
+                omitionsSet.add(unit);
+            }
+        }
+
+        StringBuilder resultBuilder = new StringBuilder();
+
+        if (timeInSeconds >= 604800) { // Weeks
+            MathUtil.appendAndSeparate(resultBuilder, (int) Math.floor(timeInSeconds / 604800), "week", condensed);
+            timeInSeconds %= 604800;
+        }
+
+        if (timeInSeconds >= 86400) { // Days
+            if (!omitionsSet.contains(TimeUnit.DAYS)) {
+                MathUtil.appendAndSeparate(resultBuilder, (int) Math.floor(timeInSeconds / 86400), "day", condensed);
+            }
+
+            timeInSeconds %= 86400;
+        }
+
+        if (timeInSeconds >= 3600) { // Hours
+            if (!omitionsSet.contains(TimeUnit.HOURS)) {
+                MathUtil.appendAndSeparate(resultBuilder, (int) Math.floor(timeInSeconds / 3600), "hour", condensed);
+            }
+
+            timeInSeconds %= 3600;
+        }
+
+        if (timeInSeconds >= 60) { // Minutes
+            if (!omitionsSet.contains(TimeUnit.MINUTES)) {
+                MathUtil.appendAndSeparate(resultBuilder, (int) Math.floor(timeInSeconds / 60), "minute", condensed);
+            }
+
+            timeInSeconds %= 60;
+        }
+
+        if (!omitionsSet.contains(TimeUnit.SECONDS) && timeInSeconds > 0) { // Seconds
+            MathUtil.appendAndSeparate(resultBuilder, timeInSeconds, "second", condensed);
+        }
+
+        String result = resultBuilder.toString().trim();
+        if (result.endsWith(",")) {
+            result = result.substring(0, result.length() - 1);
+        }
+
+        if (result.isEmpty()) {
+            result = "soon";
+        }
+
+        return result;
+    }
+
+    private static void appendAndSeparate(StringBuilder builder, int value, String toAppend, boolean condensed) {
+        builder.append(value).append(' ').append(condensed ? toAppend.charAt(0) : toAppend);
+
+        if (!condensed && value > 1) {
+            builder.append('s');
+        }
+
+        builder.append(", ");
     }
 
 }
