@@ -106,7 +106,7 @@ public final class MathUtil {
      *
      * @return the amount of time in seconds represented by the supplied value
      */
-    public static int parseSeconds(@Nullable String value, int defaultSeconds) {
+    public static long parseSeconds(@Nullable String value, int defaultSeconds) {
         return (value != null) ? parseSeconds(value) : defaultSeconds;
     }
 
@@ -117,7 +117,7 @@ public final class MathUtil {
      *
      * @return the amount of time in seconds represented by the supplied value
      */
-    public static int parseSeconds(@Nullable String value) {
+    public static long parseSeconds(@Nullable String value) {
         if (value == null) {
             return 0;
         }
@@ -157,64 +157,68 @@ public final class MathUtil {
     }
 
     /**
-     * Get a formatted time String from a time in seconds. Formatted time should be in the
+     * Get a formatted time String from a given timestamp. Formatted time should be in the
      * format, "x hours, y minutes, z seconds". Alternatively, if time is 0, "now", or
      * "invalid seconds" otherwise.
      *
-     * @param timeInSeconds the time in seconds
+     * @param time the time
+     * @param unit the unit in which time is represented
      * @param condensed whether or not to condense time units (i.e. hours {@literal ->} h)
      * @param omitions the time units to omit
      *
      * @return the formatted time
      */
     @NotNull
-    public static String getFormattedTime(int timeInSeconds, boolean condensed, @NotNull TimeUnit @NotNull... omitions) {
+    public static String getFormattedTime(long time, @NotNull TimeUnit unit, boolean condensed, @NotNull TimeUnit @NotNull... omitions) {
+        Preconditions.checkArgument(unit != null, "unit must not be null");
         Preconditions.checkArgument(omitions != null, "omitions must not be null");
 
-        if (timeInSeconds <= 0) {
-            return (timeInSeconds == 0) ? "now" : "invalid seconds";
+        time = unit.toSeconds(time); // Convert it to seconds
+
+        if (time <= 0) {
+            return (time == 0) ? "now" : "invalid seconds";
         }
 
         Set<@NotNull TimeUnit> omitionsSet = EnumSet.noneOf(TimeUnit.class);
         if (omitions != null) {
-            for (TimeUnit unit : omitions) {
-                omitionsSet.add(unit);
+            for (TimeUnit omittableUnit : omitions) {
+                omitionsSet.add(omittableUnit);
             }
         }
 
         StringBuilder resultBuilder = new StringBuilder();
 
-        if (timeInSeconds >= 604800) { // Weeks
-            MathUtil.appendAndSeparate(resultBuilder, (int) Math.floor(timeInSeconds / 604800), "week", condensed);
-            timeInSeconds %= 604800;
+        if (time >= 604800) { // Weeks
+            MathUtil.appendAndSeparate(resultBuilder, (int) Math.floor(time / 604800), "week", condensed);
+            time %= 604800;
         }
 
-        if (timeInSeconds >= 86400) { // Days
+        if (time >= 86400) { // Days
             if (!omitionsSet.contains(TimeUnit.DAYS)) {
-                MathUtil.appendAndSeparate(resultBuilder, (int) Math.floor(timeInSeconds / 86400), "day", condensed);
+                MathUtil.appendAndSeparate(resultBuilder, (int) Math.floor(time / 86400), "day", condensed);
             }
 
-            timeInSeconds %= 86400;
+            time %= 86400;
         }
 
-        if (timeInSeconds >= 3600) { // Hours
+        if (time >= 3600) { // Hours
             if (!omitionsSet.contains(TimeUnit.HOURS)) {
-                MathUtil.appendAndSeparate(resultBuilder, (int) Math.floor(timeInSeconds / 3600), "hour", condensed);
+                MathUtil.appendAndSeparate(resultBuilder, (int) Math.floor(time / 3600), "hour", condensed);
             }
 
-            timeInSeconds %= 3600;
+            time %= 3600;
         }
 
-        if (timeInSeconds >= 60) { // Minutes
+        if (time >= 60) { // Minutes
             if (!omitionsSet.contains(TimeUnit.MINUTES)) {
-                MathUtil.appendAndSeparate(resultBuilder, (int) Math.floor(timeInSeconds / 60), "minute", condensed);
+                MathUtil.appendAndSeparate(resultBuilder, (int) Math.floor(time / 60), "minute", condensed);
             }
 
-            timeInSeconds %= 60;
+            time %= 60;
         }
 
-        if (!omitionsSet.contains(TimeUnit.SECONDS) && timeInSeconds > 0) { // Seconds
-            MathUtil.appendAndSeparate(resultBuilder, timeInSeconds, "second", condensed);
+        if (!omitionsSet.contains(TimeUnit.SECONDS) && time > 0) { // Seconds
+            MathUtil.appendAndSeparate(resultBuilder, time, "second", condensed);
         }
 
         String result = resultBuilder.toString().trim();
@@ -229,7 +233,7 @@ public final class MathUtil {
         return result;
     }
 
-    private static void appendAndSeparate(StringBuilder builder, int value, String toAppend, boolean condensed) {
+    private static void appendAndSeparate(StringBuilder builder, long value, String toAppend, boolean condensed) {
         builder.append(value).append(' ').append(condensed ? toAppend.charAt(0) : toAppend);
 
         if (!condensed && value > 1) {
