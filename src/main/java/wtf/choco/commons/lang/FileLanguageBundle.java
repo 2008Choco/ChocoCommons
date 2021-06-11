@@ -40,9 +40,9 @@ public class FileLanguageBundle extends MemoryLanguageBundle {
                 continue;
             }
 
-            String[] parts = line.split("\\s*" + SEPARATOR_CHAR + "\\s*");
-            if (parts.length != 2) {
-                throw new UnsupportedOperationException("Malformatted lang entry on line " + lineNumber + ". Multiple separator characters, " + SEPARATOR_CHAR);
+            String[] parts = line.split("\\s*" + SEPARATOR_CHAR + "\\s*", 1);
+            if (parts.length == 1) {
+                throw new UnsupportedOperationException("Malformatted lang entry on line " + lineNumber + ". Missing separator character, \"" + SEPARATOR_CHAR + "\"");
             }
 
             String key = parts[0], value = parts[1];
